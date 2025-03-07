@@ -1,79 +1,119 @@
-# faixas2025
+# Aulas de TP1
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Este é um projeto Java desenvolvido como parte das aulas de **Tópicos em Programação I**. Ele utiliza **Quarkus**, **Hibernate ORM**, **PostgreSQL** e **Docker** para gerenciar entidades de estados brasileiros, com operações básicas de CRUD (Create, Read, Update, Delete). **O projeto ainda está em produção e em constante evolução.**
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## Tecnologias Utilizadas
 
-## Running the application in dev mode
+- **Quarkus**: Framework Java para aplicações nativas na nuvem.
+- **Hibernate ORM**: Framework de mapeamento objeto-relacional (ORM) para Java.
+- **PostgreSQL**: Banco de dados relacional.
+- **Docker**: Plataforma para criar, implantar e executar aplicações em contêineres.
+- **Maven**: Ferramenta de gerenciamento de dependências e build.
 
-You can run your application in dev mode that enables live coding using:
+## Funcionalidades
 
-```shell script
+- **Listar todos os estados**: Retorna uma lista de todos os estados cadastrados.
+- **Buscar estado por sigla**: Retorna um estado específico com base na sigla.
+- **Adicionar um novo estado**: Permite a inclusão de um novo estado no banco de dados.
+- **Atualizar um estado**: Permite a edição dos dados de um estado existente.
+- **Excluir um estado**: Remove um estado do banco de dados.
+
+## Pré-requisitos
+
+Antes de começar, você precisará ter instalado:
+
+- **Java JDK 21** (ou superior).
+- **Maven**.
+- **Docker** (opcional, para rodar o PostgreSQL em um contêiner).
+- **PostgreSQL** (se não estiver usando Docker).
+
+## Configuração do Projeto
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/seu-usuario/aulas-de-topicos1.git
+cd aulas-de-topicos1
+```
+
+### 2. Configuração do Banco de Dados
+
+#### Usando Docker (recomendado)
+
+1. Inicie um contêiner PostgreSQL com Docker:
+
+```bash
+docker run --name topicos1db -e POSTGRES_USER=topicos1 -e POSTGRES_PASSWORD=123456 -e POSTGRES_DB=topicos1db -p 5432:5432 -d postgres
+```
+
+2. Verifique se o contêiner está rodando:
+
+```bash
+docker ps
+```
+
+#### Usando PostgreSQL local
+
+1. Crie um banco de dados chamado `topicos1db`.
+2. Crie um usuário `topicos1` com senha `123456` e conceda todas as permissões necessárias.
+
+### 3. Configuração do `application.properties`
+
+#### No arquivo `src/main/resources/application.properties`, verifique as seguintes configurações:
+
+```properties
+quarkus.datasource.db-kind = postgresql
+quarkus.datasource.username = topicos1
+quarkus.datasource.password = 123456
+quarkus.datasource.jdbc.url = jdbc:postgresql://localhost:5432/topicos1db
+
+quarkus.hibernate-orm.database.generation=drop-and-create
+quarkus.hibernate-orm.log.sql=true
+quarkus.hibernate-orm.log.bind-parameters=true
+```
+
+### 4. Executando a Aplicação
+
+1. Compile e execute o projeto com Maven:
+
+```bash
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
-
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
-./mvnw package
+2. A aplicação estará disponível em:
+```bash
+http://localhost:8080
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+## Endpoints da API
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+### Estados
 
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+- **GET /estados**: Retorna todos os estados.
+```bash
+curl -X GET http://localhost:8080/estados
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
+- **GET /estados/sigla/{sigla}**: Retorna um estado por sigla.
+```bash
+curl -X GET http://localhost:8080/estados/sigla/SP
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+- **POST /estados**: Adiciona um novo estado.
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"nome": "Minas Gerais", "sigla": "MG"}' http://localhost:8080/estados
 ```
 
-You can then execute your native executable with: `./target/faixas2025-1.0.0-SNAPSHOT-runner`
+- **PUT /estados/{id}**: Atualiza um estado existente.
+```bash
+curl -X PUT -H "Content-Type: application/json" -d '{"nome": "Minas Gerais", "sigla": "MG"}' http://localhost:8080/estados/1
+```
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+- **DELETE /estados/{id}**: Exclui um estado.
+```bash
+curl -X DELETE http://localhost:8080/estados/1
+```
 
-## Related Guides
+## Licença
 
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes with Swagger UI
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
-
-## Provided Code
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
-
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+Este projeto está licenciado sob a licença MIT.
